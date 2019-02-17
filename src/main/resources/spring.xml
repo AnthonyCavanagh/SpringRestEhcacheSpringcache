@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:cache="http://www.springframework.org/schema/cache"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+	http://www.springframework.org/schema/beans/spring-beans.xsd
+	
+	http://www.springframework.org/schema/aop 
+	http://www.springframework.org/schema/aop/spring-aop-4.0.xsd
+	
+	http://www.springframework.org/schema/tx 
+	http://www.springframework.org/schema/tx/spring-tx-4.0.xsd
+	
+	http://www.springframework.org/schema/context
+	http://www.springframework.org/schema/context/spring-context-2.5.xsd
+	
+	http://www.springframework.org/schema/cache
+    http://www.springframework.org/schema/cache/spring-cache.xsd">
+
+
+	<context:component-scan base-package="com.cav.spring.service.bank" />
+	<tx:annotation-driven />
+	<cache:annotation-driven />
+
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource"
+		destroy-method="close">
+		<property name="driverClassName" value="com.mysql.jdbc.Driver" />
+		<property name="url" value="jdbc:mysql://localhost:3306/bank" />
+		<property name="username" value="Tony1929" />
+		<property name="password" value="uksa80" />
+	</bean>
+
+
+	<!-- Hibernate 4 SessionFactory Bean definition -->
+	<bean id="hibernate4AnnotatedSessionFactory"
+		class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<property name="annotatedClasses">
+			<list>
+				<value>com.cav.spring.service.bank.entity.Bank</value>
+				<value>com.cav.spring.service.bank.entity.Account</value>
+				<value>com.cav.spring.service.bank.entity.Fund</value>
+			</list>
+		</property>
+		<property name="hibernateProperties">
+			<props>
+				<prop key="hibernate.dialect">org.hibernate.dialect.MySQLDialect</prop>
+				<prop key="hibernate.current_session_context_class">thread</prop>
+				<prop key="hibernate.show_sql">false</prop>
+			</props>
+		</property>
+	</bean>
+
+	<bean id="transactionManager"
+		class="org.springframework.orm.hibernate4.HibernateTransactionManager">
+		<property name="sessionFactory" ref="hibernate4AnnotatedSessionFactory" />
+	</bean>
+
+	<bean id="cacheManager" class="org.springframework.cache.ehcache.EhCacheCacheManager">
+		<property name="cacheManager" ref="ehcache" />
+	</bean>
+
+	<bean id="ehcache"
+		class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean">
+		<property name="configLocation" value="classpath:config/ehcache.xml" />
+		<property name="shared" value="true" />
+	</bean>
+	
+	<bean id="fundRepository"
+		class="com.cav.spring.service.bank.repository.FundRepositoryImpl">
+		<property name="sessionFactory" ref="hibernate4AnnotatedSessionFactory" />
+	</bean>
+	
+	<bean id="accountRepository"
+		class="com.cav.spring.service.bank.repository.AccountRepositoryImpl">
+		<property name="sessionFactory" ref="hibernate4AnnotatedSessionFactory" />
+	</bean>
+	
+	<bean id="bankRepository"
+		class="com.cav.spring.service.bank.repository.BankRepositoryImpl">
+		<property name="sessionFactory" ref="hibernate4AnnotatedSessionFactory" />
+	</bean>
+</beans>
